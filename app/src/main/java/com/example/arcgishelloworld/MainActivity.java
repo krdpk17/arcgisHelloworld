@@ -4,33 +4,35 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.data.ServiceFeatureTable;
+import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.Basemap;
-//import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.Camera;
-import com.esri.arcgisruntime.mapping.view.SceneView;
+import com.esri.arcgisruntime.mapping.view.MapView;
+
 
 public class MainActivity extends AppCompatActivity {
-    private SceneView mSceneView;
+    private MapView mMapView;
 
     private void setupMap() {
-        if (mSceneView != null) {
-            ArcGISRuntimeEnvironment.setLicense(getResources().getString(R.string.arcgis_license_key));
-
-            double latitude = 33.8610;
-            double longitude = -118.8080;
-            double altitude = 25000.0;
-            double heading = 0.1;
-            double pitch = 45.0;
-            double roll = 0.0;
-
-            ArcGISScene scene = new ArcGISScene();
-            scene.setBasemap(Basemap.createStreets());
-            mSceneView.setScene(scene);
-            Camera camera = new Camera(latitude, longitude, altitude, heading, pitch, roll);
-            mSceneView.setViewpointCamera(camera);
+        if (mMapView != null) {
+            Basemap.Type basemapType = Basemap.Type.STREETS_VECTOR;
+            double latitude = 34.0270;
+            double longitude = -118.8050;
+            int levelOfDetail = 13;
+            ArcGISMap map = new ArcGISMap(basemapType, latitude, longitude, levelOfDetail);
+            mMapView.setMap(map);
         }
+    }
+
+    private void addTrailheadsLayer() {
+        String url = "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/0";
+        ServiceFeatureTable serviceFeatureTable = new ServiceFeatureTable(url);
+        FeatureLayer featureLayer = new FeatureLayer(serviceFeatureTable);
+        ArcGISMap map = mMapView.getMap();
+        map.getOperationalLayers().add(featureLayer);
     }
 
     @Override
@@ -38,13 +40,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSceneView = findViewById(R.id.sceneView);
+        mMapView = findViewById(R.id.mapView);
         setupMap();
+        addTrailheadsLayer();
     }
     @Override
     protected void onPause() {
-        if (mSceneView != null) {
-            mSceneView.pause();
+        if (mMapView != null) {
+            mMapView.pause();
         }
         super.onPause();
     }
@@ -52,15 +55,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mSceneView != null) {
-            mSceneView.resume();
+        if (mMapView != null) {
+            mMapView.resume();
         }
     }
 
     @Override
     protected void onDestroy() {
-        if (mSceneView != null) {
-            mSceneView.dispose();
+        if (mMapView != null) {
+            mMapView.dispose();
         }
         super.onDestroy();
     }
